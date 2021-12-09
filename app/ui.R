@@ -36,7 +36,7 @@ tagList(
                 column(2, tags$a(href='http://www.bioinformagic.io/', tags$img(height =75 , src = "MaGIC_Icon_0f344c.svg")), align = 'center'), 
                 column(10, fluidRow(
                   column(10, h1(strong('RNA Seq Interactive Visualization Tool'), align = 'center')),
-                  column(10, h2(strong('Project'), align = 'center'))))
+                  column(10, h2(strong('Project Name'), align = 'center'))))
                 ),
                 windowTitle = "Bulk RNAseq Analysis" ),
                 tags$style(type='text/css', '.navbar{font-size:20px;}'),
@@ -82,12 +82,30 @@ tagList(
                           style="margin-bottom:50px;", 
                           column(2,),
                           column(8,markdown("
-                          Primary alignment is performed via [STAR](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3530905/) along with associated quality trimming and QC assessment. 
+                          Primary alignment is performed via [STAR](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3530905/) along with associated quality trimming and QC assessment, and subsequent mapping counts via featureCounts. 
 
-                          #Add more details here
-
+                          ```bash
+                            mkdir aligned
+                            for prefix in $(ls trimmed/*.fastq.gz | sed -r 's/_[12]_paired[.]fastq.gz//' | uniq)
+                            do
+                                output=$(echo $prefix | cut -d'/' -f2-)
+                                STAR --genomeDir star/ \
+                                        --sjdbGTFfile references/ref_genome_genes.gtf \
+                                        --readFilesIn ${prefix}_1_paired.fastq.gz ${prefix}_2_paired.fastq.gz \
+                                        --twopassMode Basic \
+                                        --outWigType bedGraph \
+                                        --outSAMtype BAM SortedByCoordinate \
+                                        --readFilesCommand zcat \
+                                        --outFileNamePrefix aligned/${output}
+                                samtools index aligned/${output}Aligned.sortedByCoord.out.bam
+                            done
                           ```
-                          code block
+                          ```bash
+                            for file in $(ls aligned/*_trimmedAligned.sortedByCoord.out.bam)
+                            do
+                                name=$(echo $file | cut -d'/' -f2-)
+                                featureCounts -a references/ref_genome_genes.gtf -g 'gene_id' -t 'exon' -o counts/${name}_gene.featureCounts.txt --extraAttributes 'gene_name' -p $file
+                            done
                           ```
                           ")),
                           column(2,)       
@@ -109,7 +127,8 @@ tagList(
                           style="margin-bottom:50px;", 
                           column(2,),
                           column(8,markdown("Secondary processing is performed via [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html) in R. 
-                            #More details on this too
+                            These steps take the raw hitcount data, perform normalization, and identify significant differentially expressed genes. 
+                            
                             "),
                             actionButton('deseq_processing','DESeq2 Example',class='btn btn-info',style="margin-top:15px;")
                             ),
@@ -182,7 +201,7 @@ tagList(
                                     radioButtons("PCALegendPos", label="Legend Position", inline=TRUE, 
                                         choices=c("Top"='top',"Bottom"='bottom','Right'='right','left'='left'), selected="top"),
                                     sliderInput("PCAPointSize","Point Size: ", min=1, max=30, step=1, value=6),
-                                    sliderInput("PCALabelSize","Label Size: ", min=1, max=30, step=1, value=5),
+                                    sliderInput("PCALabelSize","Label Size: ", min=0, max=30, step=1, value=5),
                                     sliderInput("PCALegendIcon","Legend Icon Size", min=1, max=30, step=1, value=8),
                                     sliderInput("PCALegendLabel","Legend Label Size", , min=1, max=30, step=1, value=12)
                                 ),
@@ -215,18 +234,20 @@ tagList(
                         tabsetPanel(id='ClusteringPlots',
                             tabPanel(title='PCA', hr(), 
                                 withSpinner(type=6, color='#5bc0de',
-                                        plotOutput("pcaplot", height='100%')
+                                    plotOutput("pcaplot", height='100%')
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('PCADownload')
+                                    column(12, selectInput("DownPCAFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                    column(12, downloadButton('DownloadPCA', 'Download the PCA Plot'),style="margin-bottom:50px;")
                                 )
                             ),
                             tabPanel(title='Distance Matrix',hr(), 
                                 withSpinner(type=6, color='#5bc0de',
-                                        plotOutput("distplot", height='100%')
+                                    plotOutput("distplot", height='100%')
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('DMDownload')
+                                    column(12, selectInput("DownDMFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                    column(12, downloadButton('DownloadDM', 'Download the Distance Matrix'),style="margin-bottom:50px;")
                                 )
                             ),
                             tabPanel(title='Eigencorplots',hr(), 
@@ -234,7 +255,8 @@ tagList(
                                     plotOutput('eigencorplotout', height='100%')
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('EigenDownload')
+                                    column(12, selectInput("DownEigenFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                    column(12, downloadButton('DownloadEigen', 'Download the Eigenplot'),style="margin-bottom:50px;")
                                 )
                             )
         
@@ -276,7 +298,8 @@ tagList(
                                     plotOutput("vol_static", height='100%')
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('VolcanoDownload')
+                                    column(12, selectInput("DownVSFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                    column(12, downloadButton('DownloadVS', 'Download the Volcano Plot'),style="margin-bottom:50px;")
                                 )
                             )
                         )
@@ -323,7 +346,8 @@ tagList(
                                     plotOutput('heatmap_static', height='100%')
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('HeatmapDownload')
+                                    column(12, selectInput("DownHSFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                    column(12, downloadButton('DownloadHS', 'Download Heatmap'),style="margin-bottom:50px;")
                                 )
                             )
                         )
@@ -357,7 +381,8 @@ tagList(
                                     plotOutput('box_static', height='100%')
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('BoxPlotDownload')
+                                    column(12, selectInput("DownBoxFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                    column(12, downloadButton('DownloadBox', 'Download Box Plot'),style="margin-bottom:50px;")
                                 )
                             ),
                             tabPanel('Violin Plots', hr(), 
@@ -365,7 +390,8 @@ tagList(
                                     plotOutput('violin_static', height='100%')
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('ViolinPlotDownload')
+                                    column(12, selectInput("DownViolinFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                    column(12, downloadButton('DownloadViolin', 'Download Violin Plot'),style="margin-bottom:50px;")
                                 )
                             )
                         )
@@ -423,7 +449,8 @@ tagList(
                                     plotOutput("venn_static", height='100%')
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('VennDownload')
+                                    column(12, selectInput("DownVennSFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                    column(12, downloadButton('DownloadVennS', 'Download Venn Diagram'),style="margin-bottom:50px;")
                                 )
                             ),
                             tabPanel(title='UpSet Plots', hr(), 
@@ -431,7 +458,8 @@ tagList(
                                     plotOutput("upset_static", height='100%')
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('UpSetDownload')
+                                    column(12, selectInput("DownUpsetFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                    column(12, downloadButton('DownloadUpset', 'Download UpSet Plot'),style="margin-bottom:50px;")
                                 )
                             )
                         )
@@ -539,7 +567,8 @@ tagList(
                                     )
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('GSEAPlotDownload')
+                                    column(12, selectInput("DownGSEAFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                    column(12, downloadButton('DownloadGSEAPlot', 'Download GSEA Plot'),style="margin-bottom:50px;")
                                 ),
                                 fluidRow(style="margin-top:25px;",
                                     conditionalPanel("input.ShowGSEATable=='yes'",
@@ -550,7 +579,7 @@ tagList(
                                     )
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('GSEATableDownload')
+                                    column(12, downloadButton('DownloadGSEATable', 'Download GSEA Table'),style="margin-bottom:50px;")
                                 )
                             ),
 
@@ -561,7 +590,8 @@ tagList(
                                     )
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('ORAPlotDownload')
+                                    column(12, selectInput("DownORAFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                    column(12, downloadButton('DownloadORAPlot', 'Download ORA Plot'),style="margin-bottom:50px;")
                                 ),
                                 fluidRow(style="margin-top:25px;",
                                     conditionalPanel("input.ShowORATable=='yes'",
@@ -572,7 +602,7 @@ tagList(
                                     )
                                 ),
                                 fluidRow(align='center',style="margin-top:25px;",
-                                    uiOutput('ORATableDownload')
+                                    column(12, downloadButton('DownloadORATable', 'Download ORA Table'),style="margin-bottom:50px;")
                                 )
                             ),
 
@@ -584,7 +614,8 @@ tagList(
                                         )
                                     ),
                                     fluidRow(align='center',style="margin-top:25px;",
-                                        uiOutput('GSEASoloDownload')
+                                        column(12, selectInput("DownGSEASoloFormat", label='Choose download format', choices=c('jpeg','png','tiff'))),
+                                        column(12, downloadButton('DownloadGSEASoloPlot', 'Download GSEA Plot'),style="margin-bottom:50px;")
                                     ),
                                 ),
                                 conditionalPanel("input.SelectPlotType=='gsea_kegg'",
@@ -594,7 +625,7 @@ tagList(
                                         )
                                     ),
                                     fluidRow(align='center',style="margin-top:25px;",
-                                        uiOutput('GSEAKEGGDownload')
+                                        column(12, downloadButton('DownloadGSEAKEGGPlot', 'Download GSEA KEGG Plot'),style="margin-bottom:50px;")
                                     )
                                 ),
                                 conditionalPanel("input.SelectPlotType=='ora_kegg'",
@@ -604,7 +635,7 @@ tagList(
                                         )
                                     ),
                                     fluidRow(align='center',style="margin-top:25px;",
-                                        uiOutput('ORAKEGGDownload')
+                                        column(12, downloadButton('DownloadGSEAORAPlot', 'Download ORA KEGG Plot'),style="margin-bottom:50px;")
                                     )
                                 )
                             )                             
@@ -633,6 +664,7 @@ tagList(
                     )
                 )
             ),
+            
             
         ## Footer
 ##########################################################################################################################################################
