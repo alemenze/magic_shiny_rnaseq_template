@@ -1,6 +1,10 @@
 function(input, output, session) {
     load('data.RData')
 
+    organism='org.Hs.eg.db'
+    korg='hsa'
+    msig_org='Homo sapiens'
+
     options(shiny.maxRequestSize=30*1024^2)
     source('ui.R',local=TRUE)
     source('modals.R',local=TRUE)
