@@ -40,7 +40,7 @@ output$DownloadPCA <- downloadHandler(
             dev.off()
         }
         if(input$DownPCAFormat=='tiff'){
-            tiff(file, height=input$CHeight, width=input$CWidth)
+            tiff(file, height=input$CHeight, width=input$CWidth, res=1000)
             print(pcaplotter())
             dev.off()
         }
@@ -85,7 +85,7 @@ output$DownloadDM <- downloadHandler(
             dev.off()
         }
         if(input$DownDMFormat=='tiff'){
-            tiff(file, height=input$CHeight, width=input$CWidth)
+            tiff(file, height=input$CHeight, width=input$CWidth, res=1000)
             print(distanceplotter())
             dev.off()
         }
@@ -148,7 +148,7 @@ output$DownloadEigen <- downloadHandler(
             dev.off()
         }
         if(input$DownEigenFormat=='tiff'){
-            tiff(file, height=input$CHeight, width=input$CWidth)
+            tiff(file, height=input$CHeight, width=input$CWidth, res=1000)
             print(eigencorplotter())
             dev.off()
         }

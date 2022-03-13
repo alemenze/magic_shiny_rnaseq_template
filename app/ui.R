@@ -536,6 +536,8 @@ tagList(
                                     ), 
                                     radioButtons("ORAPVal", label="P value correction: ", inline=TRUE, 
                                         choices=c("None"='none','Bonferroni'='bonferroni','FDR'='fdr'), selected="none"),
+                                    radioButtons("EnrichDir", label='Directionality filter', inline=TRUE,
+                                        choices=c('All significant genes'='All','Upregulated genes only'='Up', 'Downregulated genes only'='Down'), selected='All'),
                                     h3('Plot Settings: '),
                                     radioButtons("ORAPlotType", label="Plot Type: ", inline=TRUE, 
                                         choices=c("Dot Plot"='dotplot','Bar Chart'='barchart','Enrichment Map'='emap'), selected="dotplot"), 

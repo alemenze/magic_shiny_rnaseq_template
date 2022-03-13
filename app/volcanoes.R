@@ -86,7 +86,7 @@ output$DownloadVS <- downloadHandler(
             dev.off()
         }
         if(input$DownVSFormat=='tiff'){
-            tiff(file, height=input$VHeight, width=input$VWidth)
+            tiff(file, height=input$VHeight, width=input$VWidth, res=1000)
             print(static_volcano_plotter())
             dev.off()
         }

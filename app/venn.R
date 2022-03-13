@@ -118,7 +118,7 @@ output$DownloadVennS <- downloadHandler(
             dev.off()
         }
         if(input$DownVennSFormat=='tiff'){
-            tiff(file, height=input$VennHeight, width=input$VennWidth)
+            tiff(file, height=input$VennHeight, width=input$VennWidth, res=1000)
             print(grid.draw(static_venn_plotter()))
             dev.off()
         }
@@ -212,7 +212,7 @@ output$DownloadUpset <- downloadHandler(
             dev.off()
         }
         if(input$DownUpsetFormat=='tiff'){
-            tiff(file, height=input$VennHeight, width=input$VennWidth)
+            tiff(file, height=input$VennHeight, width=input$VennWidth, res=1000)
             print(upset_plotter())
             dev.off()
         }

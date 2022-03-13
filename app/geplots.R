@@ -58,7 +58,7 @@ output$DownloadBox <- downloadHandler(
             dev.off()
         }
         if(input$DownBoxFormat=='tiff'){
-            tiff(file, height=input$GEHeight, width=input$GEWidth)
+            tiff(file, height=input$GEHeight, width=input$GEWidth, res=1000)
             print(box_plotter())
             dev.off()
         }
@@ -116,7 +116,7 @@ output$DownloadViolin <- downloadHandler(
             dev.off()
         }
         if(input$DownViolinFormat=='tiff'){
-            tiff(file, height=input$GEHeight, width=input$GEWidth)
+            tiff(file, height=input$GEHeight, width=input$GEWidth, res=1000)
             print(violin_plotter())
             dev.off()
         }

@@ -149,7 +149,7 @@ output$DownloadGSEAPlot <- downloadHandler(
             dev.off()
         }
         if(input$DownGSEAFormat=='tiff'){
-            tiff(file, height=input$EnrichHeight, width=input$EnrichWidth)
+            tiff(file, height=input$EnrichHeight, width=input$EnrichWidth, res=1000)
             print(plot)
             dev.off()
         }
@@ -176,6 +176,12 @@ ORAReactive <- reactive({
             }
             else if (input$Enrichpval=='pvalue'){
                 DataSet = subset(DataSet, pvalue < 0.05)
+            }
+            if(input$EnrichDir=='Up'){
+                DataSet=subset(DataSet, log2FoldChange > 0)
+            }
+            if(input$EnrichDir=='Down'){
+                DataSet=subset(DataSet, log2FoldChange < 0)
             }
             
             original_gene_list <- DataSet$log2FoldChange
@@ -296,7 +302,7 @@ output$DownloadORAPlot <- downloadHandler(
             dev.off()
         }
         if(input$DownORAFormat=='tiff'){
-            tiff(file, height=input$EnrichHeight, width=input$EnrichWidth)
+            tiff(file, height=input$EnrichHeight, width=input$EnrichWidth, res=1000)
             print(plot)
             dev.off()
         }
@@ -340,7 +346,7 @@ output$DownloadGSEASoloPlot <- downloadHandler(
             dev.off()
         }
         if(input$DownGSEASoloFormat=='tiff'){
-            tiff(file, height=input$EnrichHeight, width=input$EnrichWidth)
+            tiff(file, height=input$EnrichHeight, width=input$EnrichWidth, res=1000)
             print(plot)
             dev.off()
         }

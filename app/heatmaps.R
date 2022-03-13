@@ -168,7 +168,7 @@ output$DownloadHS <- downloadHandler(
             dev.off()
         }
         if(input$DownHSFormat=='tiff'){
-            tiff(file, height=input$CHeight, width=input$CWidth)
+            tiff(file, height=input$CHeight, width=input$CWidth, res=1000)
             print(static_heatmap_plotter())
             dev.off()
         }
