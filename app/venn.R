@@ -23,6 +23,12 @@ static_venn_plotter <- reactive({
         if (input$Vennpval=='padj'){
             dtmp <- as.data.frame(DataSet)
             gtmp <- dtmp %>% filter(padj < 0.05)
+            if(input$VDir=='Up'){
+                gtmp <- gtmp %>% filter(log2FoldChange > 0)
+            }
+            if(input$VDir=='Down'){
+                gtmp <- gtmp %>% filter(log2FoldChange < 0)
+            }
             glist <- as.list(gtmp['Gene'])
             for (item in glist$Gene){
                 sig_genes <- c(sig_genes, item)
@@ -31,6 +37,12 @@ static_venn_plotter <- reactive({
         if (input$Vennpval=='pvalue'){
             dtmp <- as.data.frame(DataSet)
             gtmp <- dtmp %>% filter(pvalue < 0.05)
+            if(input$VDir=='Up'){
+                gtmp <- gtmp %>% filter(log2FoldChange > 0)
+            }
+            if(input$VDir=='Down'){
+                gtmp <- gtmp %>% filter(log2FoldChange < 0)
+            }
             glist <- as.list(gtmp['Gene'])
             for (item in glist$Gene){
                 sig_genes <- c(sig_genes, item)
@@ -131,6 +143,12 @@ upset_plotter <- reactive({
         if (input$Upsetpval=='padj'){
             dtmp <- as.data.frame(DataSet)
             gtmp <- dtmp %>% filter(padj < 0.05)
+            if(input$UpSetDir=='Up'){
+                gtmp <- gtmp %>% filter(log2FoldChange > 0)
+            }
+            if(input$UpSetDir=='Down'){
+                gtmp <- gtmp %>% filter(log2FoldChange < 0)
+            }
             glist <- as.list(gtmp['Gene'])
             for (item in glist$Gene){
                 sig_genes <- c(sig_genes, item)
@@ -139,6 +157,12 @@ upset_plotter <- reactive({
         if (input$Upsetpval=='pvalue'){
             dtmp <- as.data.frame(DataSet)
             gtmp <- dtmp %>% filter(pvalue < 0.05)
+            if(input$VDir=='Up'){
+                gtmp <- gtmp %>% filter(log2FoldChange > 0)
+            }
+            if(input$VDir=='Down'){
+                gtmp <- gtmp %>% filter(log2FoldChange < 0)
+            }
             glist <- as.list(gtmp['Gene'])
             for (item in glist$Gene){
                 sig_genes <- c(sig_genes, item)
