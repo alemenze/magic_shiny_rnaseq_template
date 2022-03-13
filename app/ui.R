@@ -333,7 +333,19 @@ tagList(
                                         choices=c('No'='FALSE','Yes'='TRUE'), selected='FALSE'),
                                     sliderInput("HXsize", 'X-Axis Label Size', min=1, max=30, step=1, value=10),
                                     radioButtons("Hang", label='X-Axis Angle', inline=TRUE,
-                                        choices=c('0'=0,'45'=45,'90'=90,'270'=270,'315'=315), selected=45)
+                                        choices=c('0'=0,'45'=45,'90'=90,'270'=270,'315'=315), selected=45),
+                                    radioButtons('HGrouping', label='Show samples by: ', inline=TRUE,
+                                        choices=c('Individual sample'='FALSE','Average per group'='TRUE'), selected='FALSE'),
+                                    conditionalPanel("input.HGrouping=='TRUE'",
+                                        selectInput("HGroups", label="Please select grouping attribute", choices=NULL)
+                                    ),
+                                    conditionalPanel("input.HGrouping=='FALSE'",
+                                        radioButtons('HSamp', label='Select samples: ', inline=TRUE,
+                                            choices=c('All samples'='FALSE','Subset Samples'='TRUE'), selected='FALSE')
+                                    ),
+                                    conditionalPanel("input.HSamp=='TRUE'",
+                                        selectizeInput("HSamples", "Please select samples", choices = NULL, multiple=TRUE, options=list(placeholder='Search'))
+                                    )
                                 ),
                                 sliderInput('HHeight', label='Plot Heights: ', min=50, max=2000, step=10, value=800),
                                 sliderInput('HWidth', label='Plot Widths: ',  min=50, max=2000, step=10, value=800)

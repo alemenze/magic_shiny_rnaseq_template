@@ -1,7 +1,13 @@
 observe({
     GenesList=genetable$Geneid
     updateSelectizeInput(session, "HSelectedGenes", choices=GenesList, server=TRUE, options = list(maxOptions = 50))
-
+})
+observe({
+    samplenames=colnames(mat)
+    updateSelectizeInput(session, 'HSamples', choices=samplenames, server=TRUE)
+})
+observe({
+    updateSelectInput(session, 'HGroups', choices=c("None",colnames(sampletable)), selected='None')
 })
 
 static_heatmap_plotter <- reactive({
@@ -57,8 +63,34 @@ static_heatmap_plotter <- reactive({
 
         sig_genes <- unique(sig_genes)
 
-        DataIn=mat
-        
+        if(input$HSamp=='TRUE'){
+            validate(need(length(input$HSamples)>2, message = "Please choose at least 2 samples."))
+            DataIn <- subset(mat, TRUE, c(input$HSamples))
+        }
+        else{
+            DataIn=mat
+        }
+
+        if(input$HGrouping=='TRUE'){
+            heads <- list()
+            opts <- c()
+            colchoice=input$HGroups
+            for(i in unique(sampletable[[colchoice]])){
+                new <- unique(list(subset(as.data.frame(sampletable), eval(parse(text=colchoice))==i)$SampleName))
+                opts <- c(opts, i)
+                
+                heads[[paste(i)]] <- list(paste(i), c(levels(factor(new[[1]]))))
+            }
+
+            temp <- as.data.frame(mat)
+            for(i in heads){
+                temp[[paste(i[[1]])]] <- rowMeans(temp[,c(i[[2]])])
+            }
+
+            temp <- temp[,colnames(temp) %in% opts]
+            DataIn=temp
+        }
+
         DTmpIn <- DataIn[rownames(DataIn) %in% sig_genes,]
 
         plot <- pheatmap(DTmpIn, cluster_rows=cluster_r, cluster_cols=cluster_c, color=my_colors,
@@ -70,7 +102,33 @@ static_heatmap_plotter <- reactive({
         validate(need(length(input$HSelectedGenes)>1, message = "Please choose at least 2 genes."))
         chosen_genes <- c(input$HSelectedGenes)
 
-        DataIn=mat
+        if(input$HSamp=='TRUE'){
+            validate(need(length(input$HSamples)>2, message = "Please choose at least 2 samples."))
+            DataIn <- subset(mat, TRUE, c(input$HSamples))
+        }
+        else{
+            DataIn=mat
+        }
+
+        if(input$HGrouping=='TRUE'){
+            heads <- list()
+            opts <- c()
+            colchoice=input$HGroups
+            for(i in unique(sampletable[[colchoice]])){
+                new <- unique(list(subset(as.data.frame(sampletable), eval(parse(text=colchoice))==i)$SampleName))
+                opts <- c(opts, i)
+                
+                heads[[paste(i)]] <- list(paste(i), c(levels(factor(new[[1]]))))
+            }
+
+            temp <- as.data.frame(mat)
+            for(i in heads){
+                temp[[paste(i[[1]])]] <- rowMeans(temp[,c(i[[2]])])
+            }
+
+            temp <- temp[,colnames(temp) %in% opts]
+            DataIn=temp
+        }
 
         DataSet <- merge(as.data.frame(DataIn), as.data.frame(genetable), by="row.names", sort=FALSE)
         DataSet <- subset(DataSet, select=-c(Gene,Row.names))
